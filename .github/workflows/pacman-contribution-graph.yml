@@ -1,0 +1,57 @@
+name: Update Pac-Man Contribution Graph
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-pacman:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pacman-contribution-graph
+        run: npm install -g pacman-contribution-graph
+      
+      - name: Generate Pac-Man Contribution Graph (Dark)
+        run: |
+          pacman-contribution-graph \
+            --platform github \
+            --username itskonv1 \
+            --gameTheme github-dark \
+            --output pacman-contribution-graph-dark.svg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create output directory
+        run: mkdir -p output
+      
+      - name: Move SVG file to output directory
+        run: |
+          if [ -f pacman-contribution-graph-dark.svg ]; then
+            mv pacman-contribution-graph-dark.svg output/
+            echo "Successfully moved SVG file"
+          else
+            echo "Error: SVG file not found"
+            ls -la
+            exit 1
+          fi
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add output/pacman-contribution-graph-dark.svg
+          git diff --staged --quiet || git commit -m "Update Pac-Man contribution graph [skip ci]"
+          git push
+
