@@ -41,8 +41,8 @@ jobs:
             exit 1
           fi
           
-          # Copy the SVG to the repository root for direct reference
-          cp pacman-contribution-graph-dark.svg ./
+          # SVG is already in the repository root, no need to copy
+          # The file is already in place
           
           # Check if README has Pac-Man markers
           if grep -q "<!--PACMAN-START-->" README.md && grep -q "<!--PACMAN-END-->" README.md; then
