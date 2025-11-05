@@ -1,0 +1,95 @@
+name: Pacman Auto Update
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' 
+  workflow_dispatch:
+
+jobs:
+  update-pacman:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pacman-contribution-graph
+        run: npm install -g pacman-contribution-graph
+      
+      - name: Generate Pac-Man Contribution Graph (Dark)
+        run: |
+          pacman-contribution-graph \
+            --platform github \
+            --username itskonv1 \
+            --gameTheme github-dark \
+            --output pacman-contribution-graph-dark.svg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Update README with SVG
+        run: |
+          # Make sure the SVG file exists
+          if [ ! -f pacman-contribution-graph-dark.svg ]; then
+            echo "Error: SVG file not found"
+            exit 1
+          fi
+          
+          # Copy the SVG to the repository root for direct reference
+          cp pacman-contribution-graph-dark.svg ./
+          
+          # Check if README has Pac-Man markers
+          if grep -q "<!--PACMAN-START-->" README.md && grep -q "<!--PACMAN-END-->" README.md; then
+            # More portable approach using a temporary file (works on both Linux and macOS)
+            START_LINE=$(grep -n "<!--PACMAN-START-->" README.md | cut -d':' -f1)
+            END_LINE=$(grep -n "<!--PACMAN-END-->" README.md | cut -d':' -f1)
+            
+            # Create a temporary file
+            cat README.md > README.tmp
+            
+            # Extract lines before Pac-Man block
+            head -n "$START_LINE" README.md > README.new
+            
+            # Add updated Pac-Man content
+            echo "<!--PACMAN-START-->" >> README.new
+            echo "<img src=\"./pacman-contribution-graph-dark.svg\">" >> README.new
+            echo "<!--PACMAN-END-->" >> README.new
+            
+            # Extract lines after Pac-Man block
+            tail -n +"$END_LINE" README.md | tail -n +2 >> README.new
+            
+            # Replace original file
+            mv README.new README.md
+            
+            echo "Updated Pac-Man section in README.md"
+          else
+            echo "Warning: Could not find Pac-Man markers in README.md"
+            echo "Please add these two lines to your README where Pac-Man should appear:"
+            echo "<!--PACMAN-START-->"
+            echo "<!--PACMAN-END-->"
+          fi
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pacman-contribution-graph-dark.svg
+          git add README.md || true
+          
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes detected, skipping commit"
+          else
+            git commit -m "[skip ci][no ci][skip actions] Update Pac-Man contribution graph"
+            
+            # Get current branch name instead of assuming main
+            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            git push origin $CURRENT_BRANCH
+            echo "Changes pushed to $CURRENT_BRANCH"
+          fi

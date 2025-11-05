@@ -165,7 +165,15 @@
     <img src="https://github-readme-activity-graph.vercel.app/graph?username=itskonv1&theme=react" height="300" />
   </div>
 
-  <img alt="pacman contribution graph" src="https://raw.githubusercontent.com/itskonv1/itskonv1/output/pacman-contribution-graph-dark.svg" />
-  
+<h2 align="center">
+  <img src="https://img.icons8.com/?size=100&id=10249&format=png&color=00a740ff" width="20"> Pac-Man Contribution Game
+</h2>
+
+<p align="center">
+<!--PACMAN-START-->
+<img src="./pacman-contribution-graph-dark.svg">
+<!--PACMAN-END-->
+</p>
+
 
   <p align="center"><img src="assets/images/line.png" width="100%"></p>
