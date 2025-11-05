@@ -171,6 +171,7 @@
 
 <p align="center">
 <!--PACMAN-START-->
+<!--PACMAN-START-->
 <img src="./pacman-contribution-graph-dark.svg">
 <!--PACMAN-END-->
 </p>
